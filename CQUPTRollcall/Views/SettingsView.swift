@@ -9,7 +9,9 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("账号信息") {
-                    LabeledContent("账号", value: config.username)
+                    if let name = appState.userName, !name.isEmpty {
+                        LabeledContent("姓名", value: name)
+                    }
                     LabeledContent("学号", value: config.studentID)
                     LabeledContent("Client ID", value: String(config.clientID.prefix(8)) + "...")
                 }

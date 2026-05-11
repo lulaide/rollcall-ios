@@ -12,6 +12,7 @@ class AppState: ObservableObject {
     @Published var isPolling = false
     @Published var lastPollTime: Date?
     @Published var checkinMessage: String?
+    @Published var userName: String?
 
     var config = AppConfig.shared
     let lmsClient = LMSClient()
@@ -49,6 +50,13 @@ class AppState: ObservableObject {
     }
 
     func startServices() {
+        // Fetch user name in background
+        Task {
+            if let name = await lmsClient.getMyName() {
+                userName = name
+            }
+        }
+
         // Start WebSocket
         if !config.centerServerURL.isEmpty {
             centerWS = CenterWSClient(appState: self)

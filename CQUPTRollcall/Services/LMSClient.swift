@@ -170,11 +170,26 @@ class LMSClient {
     // MARK: - History
 
     private var cachedUserID: Int?
+    private var cachedUserName: String?
 
     /// Get current user's LMS internal user_id. Caches the result.
     func getMyUserID() async throws -> Int {
         if let id = cachedUserID { return id }
+        try await loadMyProfile()
+        guard let id = cachedUserID else {
+            throw LMSError.networkError(URLError(.cannotFindHost))
+        }
+        return id
+    }
 
+    /// Get current user's display name from LMS, nil if not found.
+    func getMyName() async -> String? {
+        if let name = cachedUserName { return name }
+        try? await loadMyProfile()
+        return cachedUserName
+    }
+
+    private func loadMyProfile() async throws {
         let courses = try await getCourses()
         guard let firstCourse = courses.first else {
             throw LMSError.networkError(URLError(.cannotFindHost))
@@ -187,7 +202,7 @@ class LMSClient {
         }
 
         cachedUserID = me.id
-        return me.id
+        cachedUserName = me.name
     }
 
     /// Get user's recently visited courses.
