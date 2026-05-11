@@ -47,7 +47,11 @@ struct DashboardView: View {
                 }
 
                 // Rollcalls
-                if appState.rollcalls.isEmpty {
+                // Active rollcalls (absent)
+                let absentRollcalls = appState.rollcalls.filter { $0.isAbsent }
+                let doneRollcalls = appState.rollcalls.filter { !$0.isAbsent }
+
+                if absentRollcalls.isEmpty && doneRollcalls.isEmpty {
                     Section {
                         ContentUnavailableView(
                             "暂无签到任务",
@@ -55,13 +59,23 @@ struct DashboardView: View {
                             description: Text("当前没有需要处理的签到")
                         )
                     }
-                } else {
-                    Section("签到任务") {
-                        ForEach(appState.rollcalls) { rollcall in
+                }
+
+                if !absentRollcalls.isEmpty {
+                    Section("待签到") {
+                        ForEach(absentRollcalls) { rollcall in
                             RollcallRow(rollcall: rollcall) {
                                 selectedRollcall = rollcall
                                 handleRollcallAction(rollcall)
                             }
+                        }
+                    }
+                }
+
+                if !doneRollcalls.isEmpty {
+                    Section("已完成") {
+                        ForEach(doneRollcalls) { rollcall in
+                            RollcallRow(rollcall: rollcall) {}
                         }
                     }
                 }
@@ -184,7 +198,7 @@ struct RollcallRow: View {
 struct ToastView: View {
     let message: String
 
-    var isSuccess: Bool { message.contains("成功") }
+    var isSuccess: Bool { message.contains("成功") || message.contains("已共享") || message.contains("已识别") }
 
     var body: some View {
         Label(message, systemImage: isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")

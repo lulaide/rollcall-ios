@@ -31,27 +31,24 @@ class Poller {
         Task { @MainActor [weak self] in
             guard let self, let appState = self.appState else { return }
 
-            // Fetch curriculum if needed
+            // Always fetch curriculum + refresh rollcalls so UI stays accurate
             await self.fetchCurriculumIfNeeded()
-
-            guard self.shouldPoll() else { return }
+            self.updateTodayCourses()
 
             appState.isPolling = true
             await appState.refreshRollcalls()
             appState.lastPollTime = Date()
             appState.isPolling = false
 
-            // Update today courses
-            self.updateTodayCourses()
+            // Only share with center & auto-checkin during class windows
+            guard self.shouldPoll() else { return }
 
-            // Send tasks to center
             let hasQR = appState.rollcalls.contains { $0.source == "qr" && $0.isAbsent }
             let numbers: [[String: Any]] = appState.rollcalls
                 .filter { $0.source == "number" && $0.isAbsent }
                 .map { ["rollcall_id": $0.rollcallID, "course_title": $0.courseTitle] }
             appState.centerWS?.sendRollcallTasks(hasQR: hasQR, numbers: numbers)
 
-            // Auto location checkin
             if AppConfig.shared.autoLocationCheckin {
                 await self.autoLocationCheckin()
             }

@@ -5,55 +5,38 @@ import AudioToolbox
 struct QRScannerView: View {
     let onScan: (String) -> Void
     @Environment(\.dismiss) private var dismiss
-    @State private var scannedValue: String?
+    @State private var status: ScanStatus = .scanning
     @State private var showManualInput = false
     @State private var manualInput = ""
+
+    enum ScanStatus: Equatable {
+        case scanning
+        case recognized(String)
+        case submitted(String)
+    }
 
     var body: some View {
         NavigationStack {
             ZStack {
                 if DataScannerViewController.isSupported && DataScannerViewController.isAvailable {
                     DataScannerRepresentable { value in
-                        guard scannedValue == nil else { return }
-                        scannedValue = value
-                        AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
+                        handleScannedValue(value)
                     }
                     .ignoresSafeArea()
                 } else {
                     manualInputContent
                 }
 
-                // Scanned result overlay
-                if let value = scannedValue {
+                // Status overlay
+                if status != .scanning {
                     VStack {
                         Spacer()
-                        VStack(spacing: 12) {
-                            Label("已识别二维码", systemImage: "checkmark.circle.fill")
-                                .font(.headline)
-                                .foregroundStyle(.green)
-                            Text(value.prefix(60) + (value.count > 60 ? "..." : ""))
-                                .font(.caption.monospaced())
-                                .lineLimit(2)
-                                .foregroundStyle(.secondary)
-                            HStack(spacing: 16) {
-                                Button("重新扫描") {
-                                    scannedValue = nil
-                                }
-                                .buttonStyle(.bordered)
-                                Button("提交签到") {
-                                    onScan(value)
-                                }
-                                .buttonStyle(.borderedProminent)
-                            }
-                        }
-                        .padding()
-                        .background(.regularMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .padding()
-                        .padding(.bottom, 20)
+                        statusCard
+                            .padding()
+                            .padding(.bottom, 20)
                     }
                     .transition(.move(edge: .bottom))
-                    .animation(.spring(duration: 0.3), value: scannedValue)
+                    .animation(.spring(duration: 0.3), value: status)
                 }
             }
             .navigationTitle("扫码签到")
@@ -72,9 +55,67 @@ struct QRScannerView: View {
                     guard !manualInput.isEmpty else { return }
                     onScan(manualInput)
                     manualInput = ""
+                    dismiss()
                 }
                 Button("取消", role: .cancel) { manualInput = "" }
             }
+        }
+    }
+
+    private func handleScannedValue(_ value: String) {
+        guard status == .scanning else { return }
+
+        // Try to extract QR data
+        let extracted = QRUtil.extractQRData(value)
+        if !extracted.isEmpty {
+            // Valid 42-hex QR — auto submit and close
+            status = .submitted(extracted)
+            AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
+            onScan(value)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                dismiss()
+            }
+        } else {
+            // Recognized but not matching format
+            status = .recognized(value)
+            AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
+        }
+    }
+
+    @ViewBuilder
+    private var statusCard: some View {
+        switch status {
+        case .scanning:
+            EmptyView()
+        case .submitted(let data):
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                VStack(alignment: .leading) {
+                    Text("已提交")
+                        .font(.headline)
+                    Text(data.prefix(20) + "...")
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding()
+            .background(.regularMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        case .recognized(let value):
+            VStack(spacing: 10) {
+                Label("已识别（非签到码格式）", systemImage: "exclamationmark.triangle")
+                    .font(.subheadline.weight(.medium))
+                Text(value.prefix(60) + (value.count > 60 ? "..." : ""))
+                    .font(.caption.monospaced())
+                    .lineLimit(2)
+                    .foregroundStyle(.secondary)
+                Button("继续扫描") { status = .scanning }
+                    .buttonStyle(.bordered)
+            }
+            .padding()
+            .background(.regularMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
     }
 
@@ -85,9 +126,6 @@ struct QRScannerView: View {
                 .foregroundStyle(.secondary)
             Text("相机不可用")
                 .font(.headline)
-            Text("请手动粘贴二维码内容")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
             Button("手动输入") { showManualInput = true }
                 .buttonStyle(.borderedProminent)
         }
@@ -124,7 +162,6 @@ struct DataScannerRepresentable: UIViewControllerRepresentable {
             self.onScan = onScan
         }
 
-        // Called when items are first recognized
         func dataScanner(_ dataScanner: DataScannerViewController, didAdd addedItems: [RecognizedItem], allItems: [RecognizedItem]) {
             for item in addedItems {
                 if case .barcode(let barcode) = item,
@@ -135,7 +172,6 @@ struct DataScannerRepresentable: UIViewControllerRepresentable {
             }
         }
 
-        // Called when user taps on a recognized item
         func dataScanner(_ dataScanner: DataScannerViewController, didTapOn item: RecognizedItem) {
             if case .barcode(let barcode) = item,
                let value = barcode.payloadStringValue, !value.isEmpty {
