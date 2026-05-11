@@ -115,14 +115,7 @@ class LMSClient {
 
         if let httpResp = resp as? HTTPURLResponse {
             if httpResp.statusCode == 302 || httpResp.statusCode == 401 {
-                // Try re-login
-                try await login()
-                let (data2, resp2) = try await session.data(from: url)
-                if let httpResp2 = resp2 as? HTTPURLResponse, httpResp2.statusCode != 200 {
-                    return []
-                }
-                let result = try JSONDecoder().decode(RollcallsResponse.self, from: data2)
-                return result.rollcalls
+                throw LMSError.sessionExpired
             }
             if httpResp.statusCode != 200 {
                 throw LMSError.networkError(URLError(.badServerResponse))
@@ -226,16 +219,14 @@ class LMSClient {
         return try JSONDecoder().decode(RollcallHistoryResponse.self, from: data).rollcalls
     }
 
-    /// GET a JSON endpoint, auto-relogin on session expiry.
-    private func getJSON(from url: URL, canRetry: Bool = true) async throws -> Data {
+    /// GET a JSON endpoint. Throws sessionExpired on 302/401 — caller decides what to do.
+    private func getJSON(from url: URL) async throws -> Data {
         let (data, resp) = try await session.data(from: url)
         guard let httpResp = resp as? HTTPURLResponse else {
             throw LMSError.networkError(URLError(.badServerResponse))
         }
         if httpResp.statusCode == 302 || httpResp.statusCode == 401 {
-            guard canRetry else { throw LMSError.sessionExpired }
-            try await login()
-            return try await getJSON(from: url, canRetry: false)
+            throw LMSError.sessionExpired
         }
         guard httpResp.statusCode == 200 else {
             throw LMSError.networkError(URLError(.badServerResponse))

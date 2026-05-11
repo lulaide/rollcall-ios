@@ -78,17 +78,19 @@ class AppState: ObservableObject {
     func refreshRollcalls() async {
         do {
             rollcalls = try await lmsClient.getRollcalls()
+        } catch LMSError.sessionExpired {
+            handleSessionExpired()
         } catch {
-            // Session might be expired
-            if let list = try? await retryAfterLogin() {
-                rollcalls = list
-            }
+            // Silent fail for network errors — keep showing existing data
         }
     }
 
-    private func retryAfterLogin() async throws -> [Rollcall] {
-        try await lmsClient.login()
-        return try await lmsClient.getRollcalls()
+    /// Called when any API returns 302/401. Drops back to login screen.
+    /// User must manually re-login (we never auto-retry to avoid IDS rate limits).
+    func handleSessionExpired() {
+        stopServices()
+        isLoggedIn = false
+        loginError = "会话已过期，请重新登录"
     }
 
     /// Global QR scan — submit to all absent QR rollcalls + share to center.
@@ -135,6 +137,8 @@ class AppState: ObservableObject {
             checkinMessage = "扫码签到成功"
             centerWS?.sendRollcallSuccess(type: "qr", data: ["rollcall_data": extracted])
             await refreshRollcalls()
+        } catch LMSError.sessionExpired {
+            handleSessionExpired()
         } catch {
             checkinMessage = "签到失败: \(error.localizedDescription)"
         }
@@ -149,6 +153,8 @@ class AppState: ObservableObject {
                 "rollcall_number": Int(number) ?? 0
             ])
             await refreshRollcalls()
+        } catch LMSError.sessionExpired {
+            handleSessionExpired()
         } catch {
             checkinMessage = "签到失败: \(error.localizedDescription)"
         }
@@ -159,6 +165,8 @@ class AppState: ObservableObject {
             try await lmsClient.doCheckin(rollcallID: rollcallID, type: "radar", payload: ["lat": lat, "lon": lon])
             checkinMessage = "定位签到成功"
             await refreshRollcalls()
+        } catch LMSError.sessionExpired {
+            handleSessionExpired()
         } catch {
             checkinMessage = "签到失败: \(error.localizedDescription)"
         }

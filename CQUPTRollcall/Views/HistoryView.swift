@@ -67,6 +67,8 @@ struct HistoryView: View {
         error = nil
         do {
             courses = try await appState.lmsClient.getCourses()
+        } catch LMSError.sessionExpired {
+            appState.handleSessionExpired()
         } catch {
             self.error = error.localizedDescription
         }
@@ -126,6 +128,8 @@ struct CourseRollcallsView: View {
             rollcalls = try await appState.lmsClient.getRollcallHistory(courseID: course.id, userID: userID)
             // Sort by date desc
             rollcalls.sort { ($0.rollcallTime ?? "") > ($1.rollcallTime ?? "") }
+        } catch LMSError.sessionExpired {
+            appState.handleSessionExpired()
         } catch {
             self.error = error.localizedDescription
         }
