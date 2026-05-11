@@ -8,5 +8,21 @@
     <dict/>
     <key>CFBundleDisplayName</key>
     <string>CQUPT签到</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSExceptionDomains</key>
+        <dict>
+            <key>lms.tc.cqupt.edu.cn</key>
+            <dict>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <true/>
+            </dict>
+            <key>identity.tc.cqupt.edu.cn</key>
+            <dict>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <true/>
+            </dict>
+        </dict>
+    </dict>
 </dict>
 </plist>
