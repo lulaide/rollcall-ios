@@ -1,5 +1,6 @@
 import SwiftUI
 import VisionKit
+import AudioToolbox
 
 struct QRScannerView: View {
     let onScan: (String) -> Void
