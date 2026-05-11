@@ -1,0 +1,226 @@
+import Foundation
+
+enum LMSError: LocalizedError {
+    case loginFailed(String)
+    case sessionExpired
+    case checkinFailed(String)
+    case networkError(Error)
+
+    var errorDescription: String? {
+        switch self {
+        case .loginFailed(let msg): return "登录失败: \(msg)"
+        case .sessionExpired: return "会话已过期"
+        case .checkinFailed(let msg): return msg
+        case .networkError(let err): return err.localizedDescription
+        }
+    }
+}
+
+class LMSClient {
+    private let lmsBase = "http://lms.tc.cqupt.edu.cn"
+    private let idsBase = "https://ids.cqupt.edu.cn"
+    private let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+
+    private lazy var session: URLSession = {
+        let cfg = URLSessionConfiguration.default
+        cfg.httpCookieStorage = HTTPCookieStorage.shared
+        cfg.httpShouldSetCookies = true
+        cfg.httpCookieAcceptPolicy = .always
+        cfg.httpAdditionalHeaders = ["User-Agent": userAgent]
+        return URLSession(configuration: cfg, delegate: NoRedirectDelegate.shared, delegateQueue: nil)
+    }()
+
+    // Session that follows redirects (for final login step)
+    private lazy var followSession: URLSession = {
+        let cfg = URLSessionConfiguration.default
+        cfg.httpCookieStorage = HTTPCookieStorage.shared
+        cfg.httpShouldSetCookies = true
+        cfg.httpCookieAcceptPolicy = .always
+        cfg.httpAdditionalHeaders = ["User-Agent": userAgent]
+        return URLSession(configuration: cfg)
+    }()
+
+    func login() async throws {
+        let config = AppConfig.shared
+
+        // Clear cookies
+        HTTPCookieStorage.shared.cookies?.forEach { HTTPCookieStorage.shared.deleteCookie($0) }
+
+        // Step 1: Get callback URL (follow 2 redirects)
+        let callbackURL = try await getCallbackURL()
+
+        // Step 2: Get login page params
+        let loginURL = "\(idsBase)/authserver/login?service=\(callbackURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? callbackURL)"
+        let (salt, execution) = try await getLoginPageParams(loginURL)
+
+        // Step 3: POST login
+        let encPwd = CryptoUtil.encryptPassword(config.password, key: salt)
+        let formBody = [
+            "username": config.username,
+            "password": encPwd,
+            "captcha": "",
+            "_eventId": "submit",
+            "cllt": "userNameLogin",
+            "dllt": "generalLogin",
+            "lt": "",
+            "execution": execution
+        ].map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.value)" }.joined(separator: "&")
+
+        var req = URLRequest(url: URL(string: loginURL)!)
+        req.httpMethod = "POST"
+        req.httpBody = formBody.data(using: .utf8)
+        req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+
+        let (data, resp) = try await session.data(for: req)
+
+        var redirectURL: String?
+
+        if let httpResp = resp as? HTTPURLResponse {
+            if httpResp.statusCode == 302 {
+                redirectURL = httpResp.value(forHTTPHeaderField: "Location")
+            } else if httpResp.statusCode == 200 {
+                let body = String(data: data, encoding: .utf8) ?? ""
+                if body.contains("踢出会话") || body.contains("kickout") {
+                    if let exec2 = extractExecution(from: body) {
+                        let formBody2 = "execution=\(exec2.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? exec2)&_eventId=continue"
+                        var req2 = URLRequest(url: URL(string: loginURL)!)
+                        req2.httpMethod = "POST"
+                        req2.httpBody = formBody2.data(using: .utf8)
+                        req2.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+                        let (_, resp2) = try await session.data(for: req2)
+                        if let httpResp2 = resp2 as? HTTPURLResponse, httpResp2.statusCode == 302 {
+                            redirectURL = httpResp2.value(forHTTPHeaderField: "Location")
+                        }
+                    }
+                }
+            }
+        }
+
+        // Step 4: Follow redirect with full redirect support
+        if let redirectURL, let url = URL(string: redirectURL) {
+            _ = try? await followSession.data(from: url)
+        }
+
+        // Verify session
+        let lmsURL = URL(string: lmsBase)!
+        let cookies = HTTPCookieStorage.shared.cookies(for: lmsURL) ?? []
+        guard cookies.contains(where: { $0.name == "session" }) else {
+            throw LMSError.loginFailed("未获取到 session cookie")
+        }
+    }
+
+    func getRollcalls() async throws -> [Rollcall] {
+        let url = URL(string: "\(lmsBase)/api/radar/rollcalls?api_version=1.1.0")!
+        let (data, resp) = try await session.data(from: url)
+
+        if let httpResp = resp as? HTTPURLResponse {
+            if httpResp.statusCode == 302 || httpResp.statusCode == 401 {
+                // Try re-login
+                try await login()
+                let (data2, resp2) = try await session.data(from: url)
+                if let httpResp2 = resp2 as? HTTPURLResponse, httpResp2.statusCode != 200 {
+                    return []
+                }
+                let result = try JSONDecoder().decode(RollcallsResponse.self, from: data2)
+                return result.rollcalls
+            }
+            if httpResp.statusCode != 200 {
+                throw LMSError.networkError(URLError(.badServerResponse))
+            }
+        }
+
+        let result = try JSONDecoder().decode(RollcallsResponse.self, from: data)
+        return result.rollcalls
+    }
+
+    func doCheckin(rollcallID: Int, type: String, payload: [String: Any]) async throws {
+        let endpoint: String
+        switch type {
+        case "qr": endpoint = "\(lmsBase)/api/rollcall/\(rollcallID)/answer_qr_rollcall"
+        case "number": endpoint = "\(lmsBase)/api/rollcall/\(rollcallID)/answer_number_rollcall"
+        case "radar": endpoint = "\(lmsBase)/api/rollcall/\(rollcallID)/answer"
+        default: throw LMSError.checkinFailed("未知签到类型")
+        }
+
+        var body = payload
+        body["deviceId"] = AppConfig.shared.clientID
+
+        var req = URLRequest(url: URL(string: endpoint)!)
+        req.httpMethod = "PUT"
+        req.httpBody = try JSONSerialization.data(withJSONObject: body)
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let (data, resp) = try await session.data(for: req)
+
+        if let httpResp = resp as? HTTPURLResponse, httpResp.statusCode == 200,
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           json["status"] as? String == "on_call" {
+            return // success
+        }
+
+        let errorMsg: String
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            errorMsg = json["error_code"] as? String ?? json["message"] as? String ?? "未知错误"
+        } else {
+            errorMsg = "请求失败"
+        }
+        throw LMSError.checkinFailed(errorMsg)
+    }
+
+    // MARK: - Private
+
+    private func getCallbackURL() async throws -> String {
+        var currentURL = "\(lmsBase)/login"
+        for _ in 0..<2 {
+            guard let url = URL(string: currentURL) else { break }
+            let (_, resp) = try await session.data(from: url)
+            guard let httpResp = resp as? HTTPURLResponse,
+                  (300...399).contains(httpResp.statusCode),
+                  let loc = httpResp.value(forHTTPHeaderField: "Location") else { break }
+            if let resolved = URL(string: loc, relativeTo: url)?.absoluteString {
+                currentURL = resolved
+            } else {
+                currentURL = loc
+            }
+        }
+        return currentURL
+    }
+
+    private func getLoginPageParams(_ loginURL: String) async throws -> (salt: String, execution: String) {
+        let (data, _) = try await session.data(from: URL(string: loginURL)!)
+        let html = String(data: data, encoding: .utf8) ?? ""
+
+        let salt = extractValue(from: html, id: "pwdEncryptSalt")
+        let execution = extractExecution(from: html) ?? ""
+
+        guard !execution.isEmpty else {
+            throw LMSError.loginFailed("无法获取 execution token")
+        }
+
+        return (salt, execution)
+    }
+
+    private func extractValue(from html: String, id: String) -> String {
+        let pattern = "id=\"\(id)\"[^>]*value=\"([^\"]*)\""
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let match = regex.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
+              let range = Range(match.range(at: 1), in: html) else { return "" }
+        return String(html[range])
+    }
+
+    private func extractExecution(from html: String) -> String? {
+        let pattern = "name=\"execution\"[^>]*value=\"([^\"]*)\""
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let match = regex.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
+              let range = Range(match.range(at: 1), in: html) else { return nil }
+        return String(html[range])
+    }
+}
+
+// Delegate to prevent auto-redirect following
+class NoRedirectDelegate: NSObject, URLSessionTaskDelegate {
+    static let shared = NoRedirectDelegate()
+    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+        completionHandler(nil)
+    }
+}

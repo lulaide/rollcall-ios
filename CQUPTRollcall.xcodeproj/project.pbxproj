@@ -1,0 +1,373 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01A8035CA0B2931127F9802C /* CenterWSClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FA163B7282D097C359AAA7 /* CenterWSClient.swift */; };
+		188AA6F025155860A6343709 /* CryptoUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619EA84FAA1A63E3366AF48B /* CryptoUtil.swift */; };
+		2F135E7F5EB7411F1B86C623 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1E3EBA2839B3EEBB28AFC0 /* AppState.swift */; };
+		38F979E0BBE3A03238DEB8D7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB0DACA77F4195369916B29 /* SettingsView.swift */; };
+		83D514F704B3E42C3A9C15E1 /* Rollcall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38815CF5BF01A172C93126C /* Rollcall.swift */; };
+		902855DFFDCE8652FB3232E7 /* Poller.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03F3AE95CDC5E61A20A4642 /* Poller.swift */; };
+		928506706AD1E2068A577E0F /* LMSClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 811E4B6BDB9F9EE9053ED5BF /* LMSClient.swift */; };
+		9B52D6285E29F06FD1D565E9 /* RollcallApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34763E6BE0B7171192D3DD4 /* RollcallApp.swift */; };
+		B1C4AA33301D3E7356CE31A6 /* Curriculum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0519C5861601BCA1088A0B4 /* Curriculum.swift */; };
+		BB3209D30D09BCF01A34542E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AD5D69B71B708D11320501 /* DashboardView.swift */; };
+		BC82FE107A996EEF1A03D678 /* CurriculumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A28B824C3BCC9443067918 /* CurriculumView.swift */; };
+		DDBC6279A1F6349DEC9FE688 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75210BFCEC68F11C1A351374 /* QRScannerView.swift */; };
+		F0195A96F0A1C57C6E6DCE8C /* LocationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAB84F1F4FA3A547361A38B /* LocationData.swift */; };
+		FA3BB5A81B5442FC6552C939 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFA37681753F99BD10391CA0 /* Config.swift */; };
+		FE1895E07E4B6D1F373D1198 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241A7FCCE32E417062D39010 /* LoginView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		241A7FCCE32E417062D39010 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		35FA163B7282D097C359AAA7 /* CenterWSClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenterWSClient.swift; sourceTree = "<group>"; };
+		47E99CC3DEADEA264C256397 /* CQUPTRollcall.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CQUPTRollcall.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		619EA84FAA1A63E3366AF48B /* CryptoUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoUtil.swift; sourceTree = "<group>"; };
+		6E1E3EBA2839B3EEBB28AFC0 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		75210BFCEC68F11C1A351374 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
+		811E4B6BDB9F9EE9053ED5BF /* LMSClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LMSClient.swift; sourceTree = "<group>"; };
+		9AAB84F1F4FA3A547361A38B /* LocationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationData.swift; sourceTree = "<group>"; };
+		A2AD5D69B71B708D11320501 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		B03F3AE95CDC5E61A20A4642 /* Poller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Poller.swift; sourceTree = "<group>"; };
+		B0519C5861601BCA1088A0B4 /* Curriculum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Curriculum.swift; sourceTree = "<group>"; };
+		B34763E6BE0B7171192D3DD4 /* RollcallApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RollcallApp.swift; sourceTree = "<group>"; };
+		D38815CF5BF01A172C93126C /* Rollcall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rollcall.swift; sourceTree = "<group>"; };
+		EFA37681753F99BD10391CA0 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		EFB0DACA77F4195369916B29 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F3A28B824C3BCC9443067918 /* CurriculumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		1A4D9B0C7F1C6534878A69B3 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				6E1E3EBA2839B3EEBB28AFC0 /* AppState.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		1E4DE3651697ABA8CCF0466F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F3A28B824C3BCC9443067918 /* CurriculumView.swift */,
+				A2AD5D69B71B708D11320501 /* DashboardView.swift */,
+				241A7FCCE32E417062D39010 /* LoginView.swift */,
+				75210BFCEC68F11C1A351374 /* QRScannerView.swift */,
+				EFB0DACA77F4195369916B29 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		752F0AD0F1EC818BD700E07B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				47E99CC3DEADEA264C256397 /* CQUPTRollcall.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		79D19FEA559E0F2DEE4F1AF8 /* CQUPTRollcall */ = {
+			isa = PBXGroup;
+			children = (
+				B34763E6BE0B7171192D3DD4 /* RollcallApp.swift */,
+				BC92160DD2E4542167DD0C45 /* Models */,
+				A1CE62E8074EC0AA817C15D4 /* Services */,
+				1A4D9B0C7F1C6534878A69B3 /* ViewModels */,
+				1E4DE3651697ABA8CCF0466F /* Views */,
+			);
+			path = CQUPTRollcall;
+			sourceTree = "<group>";
+		};
+		A1CE62E8074EC0AA817C15D4 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				35FA163B7282D097C359AAA7 /* CenterWSClient.swift */,
+				619EA84FAA1A63E3366AF48B /* CryptoUtil.swift */,
+				811E4B6BDB9F9EE9053ED5BF /* LMSClient.swift */,
+				9AAB84F1F4FA3A547361A38B /* LocationData.swift */,
+				B03F3AE95CDC5E61A20A4642 /* Poller.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A99C5B7CA4DE4A63387D8102 = {
+			isa = PBXGroup;
+			children = (
+				79D19FEA559E0F2DEE4F1AF8 /* CQUPTRollcall */,
+				752F0AD0F1EC818BD700E07B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BC92160DD2E4542167DD0C45 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				EFA37681753F99BD10391CA0 /* Config.swift */,
+				B0519C5861601BCA1088A0B4 /* Curriculum.swift */,
+				D38815CF5BF01A172C93126C /* Rollcall.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8E1CA1738D926D713D5F8A2B /* CQUPTRollcall */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 363C72191A5D3D9BD8F9B15E /* Build configuration list for PBXNativeTarget "CQUPTRollcall" */;
+			buildPhases = (
+				F68DF60CB3E0EB7926C919B0 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CQUPTRollcall;
+			packageProductDependencies = (
+			);
+			productName = CQUPTRollcall;
+			productReference = 47E99CC3DEADEA264C256397 /* CQUPTRollcall.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1FD8742ADDE66AB7DEFB190C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					8E1CA1738D926D713D5F8A2B = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = 569DF366AE77FB69DEDE9F0F /* Build configuration list for PBXProject "CQUPTRollcall" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = A99C5B7CA4DE4A63387D8102;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 752F0AD0F1EC818BD700E07B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8E1CA1738D926D713D5F8A2B /* CQUPTRollcall */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F68DF60CB3E0EB7926C919B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2F135E7F5EB7411F1B86C623 /* AppState.swift in Sources */,
+				01A8035CA0B2931127F9802C /* CenterWSClient.swift in Sources */,
+				FA3BB5A81B5442FC6552C939 /* Config.swift in Sources */,
+				188AA6F025155860A6343709 /* CryptoUtil.swift in Sources */,
+				B1C4AA33301D3E7356CE31A6 /* Curriculum.swift in Sources */,
+				BC82FE107A996EEF1A03D678 /* CurriculumView.swift in Sources */,
+				BB3209D30D09BCF01A34542E /* DashboardView.swift in Sources */,
+				928506706AD1E2068A577E0F /* LMSClient.swift in Sources */,
+				F0195A96F0A1C57C6E6DCE8C /* LocationData.swift in Sources */,
+				FE1895E07E4B6D1F373D1198 /* LoginView.swift in Sources */,
+				902855DFFDCE8652FB3232E7 /* Poller.swift in Sources */,
+				DDBC6279A1F6349DEC9FE688 /* QRScannerView.swift in Sources */,
+				83D514F704B3E42C3A9C15E1 /* Rollcall.swift in Sources */,
+				9B52D6285E29F06FD1D565E9 /* RollcallApp.swift in Sources */,
+				38F979E0BBE3A03238DEB8D7 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		41E3B4C38ECE95F534E8C01A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_VALUES = "NSCameraUsageDescription=需要使用相机扫描签到二维码\nUILaunchScreen={}\n";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cqupt.rollcall.CQUPTRollcall;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		67F9495F7DF91BE2A9F0A020 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_VALUES = "NSCameraUsageDescription=需要使用相机扫描签到二维码\nUILaunchScreen={}\n";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cqupt.rollcall.CQUPTRollcall;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9B4DEE05DA0F76ADC8787032 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		AE735F9DB95F6CDF1604DCC9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		363C72191A5D3D9BD8F9B15E /* Build configuration list for PBXNativeTarget "CQUPTRollcall" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				67F9495F7DF91BE2A9F0A020 /* Debug */,
+				41E3B4C38ECE95F534E8C01A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		569DF366AE77FB69DEDE9F0F /* Build configuration list for PBXProject "CQUPTRollcall" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B4DEE05DA0F76ADC8787032 /* Debug */,
+				AE735F9DB95F6CDF1604DCC9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1FD8742ADDE66AB7DEFB190C /* Project object */;
+}
