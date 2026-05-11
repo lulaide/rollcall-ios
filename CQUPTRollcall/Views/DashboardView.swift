@@ -3,6 +3,7 @@ import SwiftUI
 struct DashboardView: View {
     @EnvironmentObject var appState: AppState
     @State private var showScanner = false
+    @State private var showGlobalScanner = false
     @State private var showNumberInput = false
     @State private var selectedRollcall: Rollcall?
     @State private var numberInput = ""
@@ -10,6 +11,21 @@ struct DashboardView: View {
     var body: some View {
         NavigationStack {
             List {
+                // Global scan button — always available
+                Section {
+                    Button {
+                        showGlobalScanner = true
+                    } label: {
+                        Label("扫一扫签到", systemImage: "qrcode.viewfinder")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                }
+
                 // Status
                 Section {
                     HStack(spacing: 12) {
@@ -53,6 +69,12 @@ struct DashboardView: View {
             .navigationTitle("签到")
             .refreshable {
                 await appState.refreshRollcalls()
+            }
+            .sheet(isPresented: $showGlobalScanner) {
+                QRScannerView { qrData in
+                    showGlobalScanner = false
+                    Task { await appState.submitGlobalQR(qrData) }
+                }
             }
             .sheet(isPresented: $showScanner) {
                 QRScannerView { qrData in
