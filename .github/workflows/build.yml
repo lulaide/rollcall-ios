@@ -73,12 +73,14 @@ jobs:
             'name': 'CQUPT Rollcall',
             'subtitle': '重邮自动签到',
             'description': '重庆邮电大学自动签到系统 iOS 客户端',
+            'iconURL': 'https://github.com/${REPO}/releases/download/${TAG}/icon.png',
             'apps': [{
               'name': 'CQUPT签到',
               'bundleIdentifier': 'com.cqupt.rollcall.CQUPTRollcall',
               'developerName': 'Auto-CQUPT-Plan',
               'subtitle': '重邮自动签到',
               'localizedDescription': '重庆邮电大学自动签到系统。支持扫码签到、数字签到、自动定位签到，通过 Center 服务器实时共享签到码。',
+              'iconURL': 'https://github.com/${REPO}/releases/download/${TAG}/icon.png',
               'tintColor': '007AFF',
               'versions': [{
                 'version': '${VERSION}',
@@ -108,4 +110,5 @@ jobs:
           files: |
             CQUPTRollcall.ipa
             source.json
+            icon.png
           make_latest: true
