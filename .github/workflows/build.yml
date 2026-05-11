@@ -12,7 +12,6 @@ jobs:
     runs-on: macos-26
     permissions:
       contents: write
-      pages: write
     steps:
       - uses: actions/checkout@v4
 
@@ -50,14 +49,7 @@ jobs:
           name: CQUPTRollcall-unsigned
           path: CQUPTRollcall.ipa
 
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: CQUPTRollcall.ipa
-          generate_release_notes: true
-
-      - name: Generate LiveContainer source
+      - name: Generate source.json & Create Release
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
@@ -66,21 +58,18 @@ jobs:
           REPO="${{ github.repository }}"
           TAG="${GITHUB_REF_NAME}"
 
-          mkdir -p pages
           python3 -c "
           import json
           source = {
             'name': 'CQUPT Rollcall',
             'subtitle': '重邮自动签到',
             'description': '重庆邮电大学自动签到系统 iOS 客户端',
-            'iconURL': 'https://raw.githubusercontent.com/${REPO}/main/icon.png',
             'apps': [{
               'name': 'CQUPT签到',
               'bundleIdentifier': 'com.cqupt.rollcall.CQUPTRollcall',
               'developerName': 'Auto-CQUPT-Plan',
               'subtitle': '重邮自动签到',
               'localizedDescription': '重庆邮电大学自动签到系统。支持扫码签到、数字签到、自动定位签到，通过 Center 服务器实时共享签到码。',
-              'iconURL': 'https://raw.githubusercontent.com/${REPO}/main/icon.png',
               'tintColor': '007AFF',
               'versions': [{
                 'version': '${VERSION}',
@@ -99,13 +88,13 @@ jobs:
             'news': []
           }
           print(json.dumps(source, indent=2, ensure_ascii=False))
-          " > pages/source.json
+          " > source.json
 
-          cat pages/source.json
-
-      - name: Deploy to GitHub Pages
+      - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: peaceiris/actions-gh-pages@v4
+        uses: softprops/action-gh-release@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./pages
+          files: |
+            CQUPTRollcall.ipa
+            source.json
+          generate_release_notes: true
