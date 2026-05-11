@@ -106,7 +106,8 @@ class Poller {
 
         guard let inst = currentInst else { return }
 
-        for r in appState.rollcalls where r.source == "radar" && r.isAbsent {
+        let rollcalls = await appState.rollcalls
+        for r in rollcalls where r.source == "radar" && r.isAbsent {
             if let coords = LocationData.getCoords(for: inst.location) {
                 await appState.checkinLocation(rollcallID: r.rollcallID, lat: coords.lat, lon: coords.lon)
             }

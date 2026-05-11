@@ -2,11 +2,10 @@ name: CQUPTRollcall
 options:
   bundleIdPrefix: com.cqupt.rollcall
   deploymentTarget:
-    iOS: "16.0"
-  xcodeVersion: "15.0"
+    iOS: "26.0"
 settings:
   base:
-    SWIFT_VERSION: "5.9"
+    SWIFT_VERSION: "6.0"
     DEVELOPMENT_TEAM: ""
 targets:
   CQUPTRollcall:

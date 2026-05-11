@@ -13,7 +13,7 @@ class AppState: ObservableObject {
     @Published var lastPollTime: Date?
     @Published var checkinMessage: String?
 
-    let config = AppConfig.shared
+    var config = AppConfig.shared
     let lmsClient = LMSClient()
     var centerWS: CenterWSClient?
     var poller: Poller?
