@@ -11,6 +11,19 @@ targets:
   CQUPTRollcall:
     type: application
     platform: iOS
-    sources: [CQUPTRollcall]
+    sources:
+      - path: CQUPTRollcall
+        excludes:
+          - Info.plist
     info:
       path: CQUPTRollcall/Info.plist
+      properties:
+        NSCameraUsageDescription: 需要使用相机扫描签到二维码
+        UILaunchScreen: {}
+        CFBundleDisplayName: CQUPT签到
+        NSAppTransportSecurity:
+          NSExceptionDomains:
+            lms.tc.cqupt.edu.cn:
+              NSExceptionAllowsInsecureHTTPLoads: true
+            identity.tc.cqupt.edu.cn:
+              NSExceptionAllowsInsecureHTTPLoads: true
