@@ -1,5 +1,5 @@
 import SwiftUI
-@preconcurrency import AVFoundation
+import AVFoundation
 
 struct QRScannerView: View {
     let onScan: (String) -> Void
@@ -49,10 +49,10 @@ struct QRCameraView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: QRScannerViewController, context: Context) {}
 }
 
-class QRScannerViewController: UIViewController {
+class QRScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
     var onScan: ((String) -> Void)?
     private var captureSession: AVCaptureSession?
-    private let metadataDelegate = MetadataDelegate()
+    private var hasScanned = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,10 +65,7 @@ class QRScannerViewController: UIViewController {
 
         let output = AVCaptureMetadataOutput()
         session.addOutput(output)
-        metadataDelegate.onScan = { [weak self] value in
-            self?.onScan?(value)
-        }
-        output.setMetadataObjectsDelegate(metadataDelegate, queue: .main)
+        output.setMetadataObjectsDelegate(self, queue: .main)
         output.metadataObjectTypes = [.qr]
 
         let previewLayer = AVCaptureVideoPreviewLayer(session: session)
@@ -86,21 +83,13 @@ class QRScannerViewController: UIViewController {
         super.viewWillDisappear(animated)
         captureSession?.stopRunning()
     }
-}
 
-// Separate non-MainActor delegate to avoid isolation crossing
-private class MetadataDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate {
-    var onScan: ((String) -> Void)?
-    private var hasScanned = false
-
-    nonisolated func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         guard !hasScanned,
               let object = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
               let value = object.stringValue else { return }
         hasScanned = true
         AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
-        DispatchQueue.main.async { [self] in
-            onScan?(value)
-        }
+        onScan?(value)
     }
 }

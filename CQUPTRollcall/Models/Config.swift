@@ -1,6 +1,6 @@
 import Foundation
 
-class AppConfig: ObservableObject, @unchecked Sendable {
+class AppConfig: ObservableObject {
     static let shared = AppConfig()
 
     @Published var username: String {

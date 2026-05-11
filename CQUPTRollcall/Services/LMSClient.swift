@@ -218,7 +218,7 @@ class LMSClient {
 }
 
 // Delegate to prevent auto-redirect following
-final class NoRedirectDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+class NoRedirectDelegate: NSObject, URLSessionTaskDelegate {
     static let shared = NoRedirectDelegate()
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
         completionHandler(nil)
