@@ -8,25 +8,24 @@ struct DashboardView: View {
     @State private var numberInput = ""
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
-                // Status section
+                // Status
                 Section {
-                    HStack {
-                        Circle()
-                            .fill(appState.centerConnected ? .green : .red)
-                            .frame(width: 10, height: 10)
+                    HStack(spacing: 12) {
+                        Image(systemName: appState.centerConnected ? "wifi" : "wifi.slash")
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(appState.centerConnected ? .green : .red)
                         Text(appState.centerConnected ? "Center 已连接" : "Center 未连接")
-                            .font(.subheadline)
                         Spacer()
                         if appState.isPolling {
                             ProgressView()
-                                .scaleEffect(0.8)
+                                .controlSize(.small)
                         }
                         if let time = appState.lastPollTime {
                             Text(time, style: .relative)
                                 .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.tertiary)
                         }
                     }
                 }
@@ -34,7 +33,11 @@ struct DashboardView: View {
                 // Rollcalls
                 if appState.rollcalls.isEmpty {
                     Section {
-                        ContentUnavailableView("暂无签到任务", systemImage: "checkmark.circle", description: Text("当前没有需要处理的签到"))
+                        ContentUnavailableView(
+                            "暂无签到任务",
+                            systemImage: "checkmark.circle",
+                            description: Text("当前没有需要处理的签到")
+                        )
                     }
                 } else {
                     Section("签到任务") {
@@ -70,13 +73,16 @@ struct DashboardView: View {
                 }
                 Button("取消", role: .cancel) { numberInput = "" }
             }
-            .overlay {
+            .overlay(alignment: .bottom) {
                 if let msg = appState.checkinMessage {
-                    checkinToast(msg)
+                    ToastView(message: msg)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .padding(.bottom, 80)
                 }
             }
-            .onChange(of: appState.checkinMessage) { _ in
-                if appState.checkinMessage != nil {
+            .animation(.spring(duration: 0.3), value: appState.checkinMessage)
+            .onChange(of: appState.checkinMessage) { _, newValue in
+                if newValue != nil {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                         appState.checkinMessage = nil
                     }
@@ -93,7 +99,6 @@ struct DashboardView: View {
         case "number":
             showNumberInput = true
         case "radar":
-            // Find location and auto-checkin
             Task {
                 if let course = appState.todayCourses.first(where: { $0.isNow }),
                    let coords = LocationData.getCoords(for: course.location) {
@@ -105,22 +110,6 @@ struct DashboardView: View {
         default: break
         }
     }
-
-    private func checkinToast(_ msg: String) -> some View {
-        VStack {
-            Spacer()
-            Text(msg)
-                .font(.subheadline.bold())
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
-                .background(msg.contains("成功") ? Color.green : Color.red)
-                .foregroundColor(.white)
-                .clipShape(Capsule())
-                .padding(.bottom, 80)
-        }
-        .animation(.easeInOut, value: msg)
-        .transition(.move(edge: .bottom))
-    }
 }
 
 struct RollcallRow: View {
@@ -128,8 +117,9 @@ struct RollcallRow: View {
     let action: () -> Void
 
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             Image(systemName: rollcall.sourceIcon)
+                .symbolRenderingMode(.hierarchical)
                 .font(.title2)
                 .foregroundStyle(rollcall.isAbsent ? .orange : .green)
                 .frame(width: 36)
@@ -137,15 +127,15 @@ struct RollcallRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(rollcall.courseTitle)
                     .font(.headline)
-                HStack {
+                HStack(spacing: 6) {
                     Text(rollcall.sourceLabel)
-                        .font(.caption)
+                        .font(.caption2.weight(.medium))
                         .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.1))
+                        .padding(.vertical, 3)
+                        .background(.tint.opacity(0.12))
                         .clipShape(Capsule())
                     Text(rollcall.statusLabel)
-                        .font(.caption)
+                        .font(.caption2)
                         .foregroundStyle(rollcall.isAbsent ? .orange : .green)
                 }
             }
@@ -155,19 +145,32 @@ struct RollcallRow: View {
             if rollcall.isAbsent {
                 Button(action: action) {
                     Text("签到")
-                        .font(.subheadline.bold())
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(.blue)
-                        .foregroundColor(.white)
-                        .clipShape(Capsule())
+                        .font(.subheadline.weight(.semibold))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
             } else {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.green)
+                    .font(.title3)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
+    }
+}
+
+struct ToastView: View {
+    let message: String
+
+    var isSuccess: Bool { message.contains("成功") }
+
+    var body: some View {
+        Label(message, systemImage: isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
+            .font(.subheadline.weight(.medium))
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(.regularMaterial)
+            .clipShape(Capsule())
+            .shadow(radius: 8)
     }
 }

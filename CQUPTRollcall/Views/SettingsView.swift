@@ -6,26 +6,28 @@ struct SettingsView: View {
     @State private var showLogoutConfirm = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
-                Section("账号") {
+                Section("账号信息") {
                     LabeledContent("账号", value: config.username)
                     LabeledContent("学号", value: config.studentID)
-                    LabeledContent("Client ID", value: String(config.clientID.prefix(8)))
+                    LabeledContent("Client ID", value: String(config.clientID.prefix(8)) + "...")
                 }
 
                 Section("签到设置") {
                     Toggle("自动定位签到", isOn: $config.autoLocationCheckin)
                     Toggle("暂停接收共享签到", isOn: $config.pauseSharedRollcall)
-                    Stepper("课前 \(config.curriculumPreMinutes) 分钟开始轮询", value: $config.curriculumPreMinutes, in: 1...30)
+                    Stepper(value: $config.curriculumPreMinutes, in: 1...30) {
+                        Label("课前 \(config.curriculumPreMinutes) 分钟轮询", systemImage: "clock")
+                    }
                 }
 
                 Section("服务器") {
-                    VStack(alignment: .leading) {
-                        Text("Center 地址").font(.caption).foregroundStyle(.secondary)
-                        TextField("wss://...", text: $config.centerServerURL)
-                            .font(.subheadline)
-                            .autocapitalization(.none)
+                    LabeledContent("Center") {
+                        Text(config.centerServerURL)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
                     }
                 }
 
@@ -35,14 +37,14 @@ struct SettingsView: View {
                     } label: {
                         HStack {
                             Spacer()
-                            Text("退出登录")
+                            Label("退出登录", systemImage: "rectangle.portrait.and.arrow.right")
                             Spacer()
                         }
                     }
                 }
             }
             .navigationTitle("设置")
-            .confirmationDialog("确定退出登录?", isPresented: $showLogoutConfirm) {
+            .confirmationDialog("确定退出登录?", isPresented: $showLogoutConfirm, titleVisibility: .visible) {
                 Button("退出登录", role: .destructive) {
                     appState.logout()
                 }

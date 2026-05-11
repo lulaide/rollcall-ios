@@ -6,32 +6,32 @@ struct RollcallApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if appState.isLoggedIn {
-                MainTabView()
-                    .environmentObject(appState)
-            } else {
-                LoginView()
-                    .environmentObject(appState)
+            Group {
+                if appState.isLoggedIn {
+                    MainTabView()
+                } else {
+                    LoginView()
+                }
             }
+            .environmentObject(appState)
         }
     }
 }
 
 struct MainTabView: View {
+    @State private var selectedTab = 0
+
     var body: some View {
-        TabView {
-            DashboardView()
-                .tabItem {
-                    Label("签到", systemImage: "checkmark.circle")
-                }
-            CurriculumView()
-                .tabItem {
-                    Label("课表", systemImage: "calendar")
-                }
-            SettingsView()
-                .tabItem {
-                    Label("设置", systemImage: "gearshape")
-                }
+        TabView(selection: $selectedTab) {
+            Tab("签到", systemImage: "checkmark.circle.fill", value: 0) {
+                DashboardView()
+            }
+            Tab("课表", systemImage: "calendar", value: 1) {
+                CurriculumView()
+            }
+            Tab("设置", systemImage: "gearshape.fill", value: 2) {
+                SettingsView()
+            }
         }
     }
 }
