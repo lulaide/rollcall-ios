@@ -52,44 +52,60 @@ struct QRCameraView: UIViewControllerRepresentable {
 class QRScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
     var onScan: ((String) -> Void)?
     private var captureSession: AVCaptureSession?
+    private var previewLayer: AVCaptureVideoPreviewLayer?
     private var hasScanned = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .black
 
         let session = AVCaptureSession()
         session.sessionPreset = .high
-        guard let device = AVCaptureDevice.default(for: .video),
-              let input = try? AVCaptureDeviceInput(device: device) else { return }
 
-        // Configure autofocus
-        if device.isFocusModeSupported(.continuousAutoFocus) {
-            try? device.lockForConfiguration()
-            device.focusMode = .continuousAutoFocus
-            if device.isFocusPointOfInterestSupported {
-                device.focusPointOfInterest = CGPoint(x: 0.5, y: 0.5)
-            }
-            if device.isAutoFocusRangeRestrictionSupported {
-                device.autoFocusRangeRestriction = .near
-            }
-            device.unlockForConfiguration()
-        }
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+              let input = try? AVCaptureDeviceInput(device: device),
+              session.canAddInput(input) else { return }
 
         session.addInput(input)
 
+        // Configure autofocus
+        try? device.lockForConfiguration()
+        if device.isFocusModeSupported(.continuousAutoFocus) {
+            device.focusMode = .continuousAutoFocus
+        }
+        if device.isFocusPointOfInterestSupported {
+            device.focusPointOfInterest = CGPoint(x: 0.5, y: 0.5)
+        }
+        if device.isAutoFocusRangeRestrictionSupported {
+            device.autoFocusRangeRestriction = .near
+        }
+        device.unlockForConfiguration()
+
         let output = AVCaptureMetadataOutput()
+        guard session.canAddOutput(output) else { return }
         session.addOutput(output)
         output.setMetadataObjectsDelegate(self, queue: .main)
         output.metadataObjectTypes = [.qr]
 
-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer.frame = view.bounds
-        previewLayer.videoGravity = .resizeAspectFill
-        view.layer.addSublayer(previewLayer)
+        let layer = AVCaptureVideoPreviewLayer(session: session)
+        layer.videoGravity = .resizeAspectFill
+        view.layer.addSublayer(layer)
+        previewLayer = layer
 
         captureSession = session
-        DispatchQueue.global(qos: .background).async {
-            session.startRunning()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        previewLayer?.frame = view.bounds
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if let session = captureSession, !session.isRunning {
+            DispatchQueue.global(qos: .userInitiated).async {
+                session.startRunning()
+            }
         }
     }
 
