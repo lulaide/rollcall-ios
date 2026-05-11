@@ -38,7 +38,7 @@ struct CourseRow: View {
             .frame(width: 50)
 
             RoundedRectangle(cornerRadius: 2)
-                .fill(course.isNow ? .green : .quaternary)
+                .fill(course.isNow ? Color.green : Color.gray.opacity(0.3))
                 .frame(width: 4)
 
             VStack(alignment: .leading, spacing: 4) {
