@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 class AppConfig: ObservableObject {
     static let shared = AppConfig()
 
