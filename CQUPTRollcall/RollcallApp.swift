@@ -29,7 +29,10 @@ struct MainTabView: View {
             Tab("课表", systemImage: "calendar", value: 1) {
                 CurriculumView()
             }
-            Tab("设置", systemImage: "gearshape.fill", value: 2) {
+            Tab("历史", systemImage: "clock.arrow.circlepath", value: 2) {
+                HistoryView()
+            }
+            Tab("设置", systemImage: "gearshape.fill", value: 3) {
                 SettingsView()
             }
         }

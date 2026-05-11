@@ -167,6 +167,50 @@ class LMSClient {
         throw LMSError.checkinFailed(errorMsg)
     }
 
+    // MARK: - History
+
+    private var cachedUserID: Int?
+
+    /// Get current user's LMS internal user_id. Caches the result.
+    func getMyUserID() async throws -> Int {
+        if let id = cachedUserID { return id }
+
+        let courses = try await getCourses()
+        guard let firstCourse = courses.first else {
+            throw LMSError.networkError(URLError(.cannotFindHost))
+        }
+
+        let studentID = AppConfig.shared.studentID
+        let students = try await getCourseStudents(courseID: firstCourse.id)
+        guard let me = students.first(where: { $0.userNo == studentID }) else {
+            throw LMSError.networkError(URLError(.cannotFindHost))
+        }
+
+        cachedUserID = me.id
+        return me.id
+    }
+
+    /// Get user's recently visited courses.
+    func getCourses() async throws -> [Course] {
+        let url = URL(string: "\(lmsBase)/api/user/recently-visited-courses")!
+        let (data, _) = try await session.data(from: url)
+        return try JSONDecoder().decode(VisitedCoursesResponse.self, from: data).visitedCourses
+    }
+
+    /// Get students of a course (used to resolve user_id by user_no).
+    func getCourseStudents(courseID: Int) async throws -> [CourseStudent] {
+        let url = URL(string: "\(lmsBase)/api/course/\(courseID)/students")!
+        let (data, _) = try await session.data(from: url)
+        return try JSONDecoder().decode(CourseStudentsResponse.self, from: data).students
+    }
+
+    /// Get rollcall history for a specific course.
+    func getRollcallHistory(courseID: Int, userID: Int) async throws -> [RollcallHistory] {
+        let url = URL(string: "\(lmsBase)/api/course/\(courseID)/student/\(userID)/rollcalls")!
+        let (data, _) = try await session.data(from: url)
+        return try JSONDecoder().decode(RollcallHistoryResponse.self, from: data).rollcalls
+    }
+
     // MARK: - Private
 
     private func getCallbackURL() async throws -> String {
