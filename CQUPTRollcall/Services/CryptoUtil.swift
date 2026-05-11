@@ -60,7 +60,8 @@ enum QRUtil {
     private static let qrRegex = try! NSRegularExpression(pattern: "^[a-f0-9]{42}$", options: .caseInsensitive)
     private static let urlRegex = try! NSRegularExpression(pattern: "!3~([a-fA-F0-9]+)")
 
-    /// Extract and validate 42-char hex QR data. Returns empty string if invalid/expired.
+    /// Extract 42-char hex QR data from raw scan. No timestamp validation —
+    /// the iOS app is a scanner for Center sharing, let server-side validate.
     static func extractQRData(_ rawData: String) -> String {
         var data = rawData
 
@@ -78,11 +79,6 @@ enum QRUtil {
 
         let range = NSRange(data.startIndex..., in: data)
         guard qrRegex.firstMatch(in: data, range: range) != nil else { return "" }
-
-        // First 10 chars = unix timestamp
-        let tsStr = String(data.prefix(10))
-        guard let ts = Int(tsStr) else { return "" }
-        guard Int(Date().timeIntervalSince1970) - ts <= 15 else { return "" }
 
         return data
     }
