@@ -36,7 +36,7 @@ struct HistoryView: View {
                                     .foregroundStyle(.tint)
                                     .font(.title2)
                                 VStack(alignment: .leading) {
-                                    Text(course.name)
+                                    Text(course.displayName)
                                         .font(.headline)
                                     if let dept = course.department?.name {
                                         Text(dept)
@@ -112,7 +112,7 @@ struct CourseRollcallsView: View {
                 }
             }
         }
-        .navigationTitle(course.name)
+        .navigationTitle(course.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await load() }
         .task { if rollcalls.isEmpty { await load() } }

@@ -2,12 +2,14 @@ import Foundation
 
 struct Course: Identifiable, Codable {
     let id: Int
-    let name: String
+    let name: String?
     let department: Department?
 
     struct Department: Codable {
         let name: String?
     }
+
+    var displayName: String { name ?? "未命名课程" }
 }
 
 struct VisitedCoursesResponse: Codable {

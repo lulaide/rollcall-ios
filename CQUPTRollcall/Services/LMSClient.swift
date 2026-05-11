@@ -208,22 +208,39 @@ class LMSClient {
     /// Get user's recently visited courses.
     func getCourses() async throws -> [Course] {
         let url = URL(string: "\(lmsBase)/api/user/recently-visited-courses")!
-        let (data, _) = try await session.data(from: url)
+        let data = try await getJSON(from: url)
         return try JSONDecoder().decode(VisitedCoursesResponse.self, from: data).visitedCourses
     }
 
     /// Get students of a course (used to resolve user_id by user_no).
     func getCourseStudents(courseID: Int) async throws -> [CourseStudent] {
         let url = URL(string: "\(lmsBase)/api/course/\(courseID)/students")!
-        let (data, _) = try await session.data(from: url)
+        let data = try await getJSON(from: url)
         return try JSONDecoder().decode(CourseStudentsResponse.self, from: data).students
     }
 
     /// Get rollcall history for a specific course.
     func getRollcallHistory(courseID: Int, userID: Int) async throws -> [RollcallHistory] {
         let url = URL(string: "\(lmsBase)/api/course/\(courseID)/student/\(userID)/rollcalls")!
-        let (data, _) = try await session.data(from: url)
+        let data = try await getJSON(from: url)
         return try JSONDecoder().decode(RollcallHistoryResponse.self, from: data).rollcalls
+    }
+
+    /// GET a JSON endpoint, auto-relogin on session expiry.
+    private func getJSON(from url: URL, canRetry: Bool = true) async throws -> Data {
+        let (data, resp) = try await session.data(from: url)
+        guard let httpResp = resp as? HTTPURLResponse else {
+            throw LMSError.networkError(URLError(.badServerResponse))
+        }
+        if httpResp.statusCode == 302 || httpResp.statusCode == 401 {
+            guard canRetry else { throw LMSError.sessionExpired }
+            try await login()
+            return try await getJSON(from: url, canRetry: false)
+        }
+        guard httpResp.statusCode == 200 else {
+            throw LMSError.networkError(URLError(.badServerResponse))
+        }
+        return data
     }
 
     // MARK: - Private
