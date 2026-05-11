@@ -12,8 +12,5 @@ targets:
     type: application
     platform: iOS
     sources: [CQUPTRollcall]
-    settings:
-      base:
-        INFOPLIST_VALUES: |
-          NSCameraUsageDescription=需要使用相机扫描签到二维码
-          UILaunchScreen={}
+    info:
+      path: CQUPTRollcall/Info.plist
