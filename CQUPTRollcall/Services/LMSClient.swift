@@ -92,20 +92,42 @@ class LMSClient {
                             redirectURL = httpResp2.value(forHTTPHeaderField: "Location")
                         }
                     }
+                } else if body.contains("badCredentials") || body.contains("用户名或密码") {
+                    throw LMSError.loginFailed("账号或密码错误")
+                } else if body.contains("needCaptcha") || body.contains("captcha") {
+                    throw LMSError.loginFailed("需要验证码（账号被临时锁定，请稍后再试）")
+                } else {
+                    throw LMSError.loginFailed("IDS 返回意外响应 (200)")
                 }
+            } else {
+                // 401/403/etc — IDS rejected the login
+                throw LMSError.loginFailed("IDS 登录被拒绝 (HTTP \(httpResp.statusCode))")
             }
         }
 
-        // Step 4: Follow redirect with full redirect support
-        if let redirectURL, let url = URL(string: redirectURL) {
-            _ = try? await followSession.data(from: url)
+        // Must have got a redirect URL from successful IDS login
+        guard let redirectURL else {
+            throw LMSError.loginFailed("未获取到登录重定向")
         }
 
-        // Verify session
+        // Step 4: Follow redirect to LMS (CAS validates and sets real session cookie)
+        guard let url = URL(string: redirectURL) else {
+            throw LMSError.loginFailed("重定向 URL 无效")
+        }
+        _ = try? await followSession.data(from: url)
+
+        // Verify session cookie on LMS domain
         let lmsURL = URL(string: lmsBase)!
         let cookies = HTTPCookieStorage.shared.cookies(for: lmsURL) ?? []
         guard cookies.contains(where: { $0.name == "session" }) else {
             throw LMSError.loginFailed("未获取到 session cookie")
+        }
+
+        // Final sanity check: actually try the API to confirm session is authenticated
+        let testURL = URL(string: "\(lmsBase)/api/radar/rollcalls?api_version=1.1.0")!
+        let (_, testResp) = try await session.data(from: testURL)
+        if let httpResp = testResp as? HTTPURLResponse, httpResp.statusCode != 200 {
+            throw LMSError.loginFailed("登录后 API 验证失败 (HTTP \(httpResp.statusCode))")
         }
     }
 

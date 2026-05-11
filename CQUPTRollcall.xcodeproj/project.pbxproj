@@ -11,11 +11,14 @@
 		188AA6F025155860A6343709 /* CryptoUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619EA84FAA1A63E3366AF48B /* CryptoUtil.swift */; };
 		2F135E7F5EB7411F1B86C623 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1E3EBA2839B3EEBB28AFC0 /* AppState.swift */; };
 		38F979E0BBE3A03238DEB8D7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB0DACA77F4195369916B29 /* SettingsView.swift */; };
+		82797B900B4640D6D71B25ED /* History.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F251880671E932E09B58003 /* History.swift */; };
 		83D514F704B3E42C3A9C15E1 /* Rollcall.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38815CF5BF01A172C93126C /* Rollcall.swift */; };
+		88DF85E3C6EC0332594A9541 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E7DB77AC5534105F331C001 /* HistoryView.swift */; };
 		902855DFFDCE8652FB3232E7 /* Poller.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03F3AE95CDC5E61A20A4642 /* Poller.swift */; };
 		928506706AD1E2068A577E0F /* LMSClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 811E4B6BDB9F9EE9053ED5BF /* LMSClient.swift */; };
 		9B52D6285E29F06FD1D565E9 /* RollcallApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34763E6BE0B7171192D3DD4 /* RollcallApp.swift */; };
 		B1C4AA33301D3E7356CE31A6 /* Curriculum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0519C5861601BCA1088A0B4 /* Curriculum.swift */; };
+		B74FA87AFD3A5EC5511BCA40 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E7712910F0F4F495176945C2 /* Assets.xcassets */; };
 		BB3209D30D09BCF01A34542E /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AD5D69B71B708D11320501 /* DashboardView.swift */; };
 		BC82FE107A996EEF1A03D678 /* CurriculumView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A28B824C3BCC9443067918 /* CurriculumView.swift */; };
 		DDBC6279A1F6349DEC9FE688 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75210BFCEC68F11C1A351374 /* QRScannerView.swift */; };
@@ -28,16 +31,19 @@
 		241A7FCCE32E417062D39010 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		35FA163B7282D097C359AAA7 /* CenterWSClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenterWSClient.swift; sourceTree = "<group>"; };
 		47E99CC3DEADEA264C256397 /* CQUPTRollcall.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CQUPTRollcall.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5F251880671E932E09B58003 /* History.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = History.swift; sourceTree = "<group>"; };
 		619EA84FAA1A63E3366AF48B /* CryptoUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoUtil.swift; sourceTree = "<group>"; };
 		6E1E3EBA2839B3EEBB28AFC0 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		75210BFCEC68F11C1A351374 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerView.swift; sourceTree = "<group>"; };
 		811E4B6BDB9F9EE9053ED5BF /* LMSClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LMSClient.swift; sourceTree = "<group>"; };
 		9AAB84F1F4FA3A547361A38B /* LocationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationData.swift; sourceTree = "<group>"; };
+		9E7DB77AC5534105F331C001 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		A2AD5D69B71B708D11320501 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		B03F3AE95CDC5E61A20A4642 /* Poller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Poller.swift; sourceTree = "<group>"; };
 		B0519C5861601BCA1088A0B4 /* Curriculum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Curriculum.swift; sourceTree = "<group>"; };
 		B34763E6BE0B7171192D3DD4 /* RollcallApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RollcallApp.swift; sourceTree = "<group>"; };
 		D38815CF5BF01A172C93126C /* Rollcall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rollcall.swift; sourceTree = "<group>"; };
+		E7712910F0F4F495176945C2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EFA37681753F99BD10391CA0 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		EFB0DACA77F4195369916B29 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F3A28B824C3BCC9443067918 /* CurriculumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumView.swift; sourceTree = "<group>"; };
@@ -57,6 +63,7 @@
 			children = (
 				F3A28B824C3BCC9443067918 /* CurriculumView.swift */,
 				A2AD5D69B71B708D11320501 /* DashboardView.swift */,
+				9E7DB77AC5534105F331C001 /* HistoryView.swift */,
 				241A7FCCE32E417062D39010 /* LoginView.swift */,
 				75210BFCEC68F11C1A351374 /* QRScannerView.swift */,
 				EFB0DACA77F4195369916B29 /* SettingsView.swift */,
@@ -75,6 +82,7 @@
 		79D19FEA559E0F2DEE4F1AF8 /* CQUPTRollcall */ = {
 			isa = PBXGroup;
 			children = (
+				E7712910F0F4F495176945C2 /* Assets.xcassets */,
 				B34763E6BE0B7171192D3DD4 /* RollcallApp.swift */,
 				BC92160DD2E4542167DD0C45 /* Models */,
 				A1CE62E8074EC0AA817C15D4 /* Services */,
@@ -109,6 +117,7 @@
 			children = (
 				EFA37681753F99BD10391CA0 /* Config.swift */,
 				B0519C5861601BCA1088A0B4 /* Curriculum.swift */,
+				5F251880671E932E09B58003 /* History.swift */,
 				D38815CF5BF01A172C93126C /* Rollcall.swift */,
 			);
 			path = Models;
@@ -122,6 +131,7 @@
 			buildConfigurationList = 363C72191A5D3D9BD8F9B15E /* Build configuration list for PBXNativeTarget "CQUPTRollcall" */;
 			buildPhases = (
 				F68DF60CB3E0EB7926C919B0 /* Sources */,
+				E8B9CC50529B725E85797C4C /* Resources */,
 			);
 			buildRules = (
 			);
@@ -141,7 +151,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					8E1CA1738D926D713D5F8A2B = {
 						DevelopmentTeam = "";
@@ -167,6 +177,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		E8B9CC50529B725E85797C4C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B74FA87AFD3A5EC5511BCA40 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		F68DF60CB3E0EB7926C919B0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -179,6 +200,8 @@
 				B1C4AA33301D3E7356CE31A6 /* Curriculum.swift in Sources */,
 				BC82FE107A996EEF1A03D678 /* CurriculumView.swift in Sources */,
 				BB3209D30D09BCF01A34542E /* DashboardView.swift in Sources */,
+				82797B900B4640D6D71B25ED /* History.swift in Sources */,
+				88DF85E3C6EC0332594A9541 /* HistoryView.swift in Sources */,
 				928506706AD1E2068A577E0F /* LMSClient.swift in Sources */,
 				F0195A96F0A1C57C6E6DCE8C /* LocationData.swift in Sources */,
 				FE1895E07E4B6D1F373D1198 /* LoginView.swift in Sources */,
@@ -198,7 +221,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				INFOPLIST_VALUES = "NSCameraUsageDescription=需要使用相机扫描签到二维码\nUILaunchScreen={}\n";
+				INFOPLIST_FILE = CQUPTRollcall/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -214,7 +237,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				INFOPLIST_VALUES = "NSCameraUsageDescription=需要使用相机扫描签到二维码\nUILaunchScreen={}\n";
+				INFOPLIST_FILE = CQUPTRollcall/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -277,7 +300,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -285,7 +308,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.9;
+				SWIFT_VERSION = 5;
 			};
 			name = Debug;
 		};
@@ -335,14 +358,14 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.9;
+				SWIFT_VERSION = 5;
 			};
 			name = Release;
 		};
