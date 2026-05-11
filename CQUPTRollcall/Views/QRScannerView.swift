@@ -49,10 +49,10 @@ struct QRCameraView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: QRScannerViewController, context: Context) {}
 }
 
-class QRScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
+class QRScannerViewController: UIViewController {
     var onScan: ((String) -> Void)?
     private var captureSession: AVCaptureSession?
-    private var hasScanned = false
+    private let metadataDelegate = MetadataDelegate()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,7 +65,10 @@ class QRScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsD
 
         let output = AVCaptureMetadataOutput()
         session.addOutput(output)
-        output.setMetadataObjectsDelegate(self, queue: .main)
+        metadataDelegate.onScan = { [weak self] value in
+            self?.onScan?(value)
+        }
+        output.setMetadataObjectsDelegate(metadataDelegate, queue: .main)
         output.metadataObjectTypes = [.qr]
 
         let previewLayer = AVCaptureVideoPreviewLayer(session: session)
@@ -83,13 +86,21 @@ class QRScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsD
         super.viewWillDisappear(animated)
         captureSession?.stopRunning()
     }
+}
 
-    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+// Separate non-MainActor delegate to avoid isolation crossing
+private class MetadataDelegate: NSObject, AVCaptureMetadataOutputObjectsDelegate {
+    var onScan: ((String) -> Void)?
+    private var hasScanned = false
+
+    nonisolated func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         guard !hasScanned,
               let object = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
               let value = object.stringValue else { return }
         hasScanned = true
         AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
-        onScan?(value)
+        DispatchQueue.main.async { [self] in
+            onScan?(value)
+        }
     }
 }
