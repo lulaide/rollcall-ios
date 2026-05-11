@@ -3,12 +3,16 @@ name: Build IPA
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
     branches: [main]
 
 jobs:
   build:
     runs-on: macos-26
+    permissions:
+      contents: write
+      pages: write
     steps:
       - uses: actions/checkout@v4
 
@@ -40,14 +44,68 @@ jobs:
           zip -r CQUPTRollcall.ipa Payload
           ls -lh CQUPTRollcall.ipa
 
-      - name: Upload IPA
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: CQUPTRollcall-unsigned
           path: CQUPTRollcall.ipa
 
-      - name: Upload to Release (on tag)
+      - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: CQUPTRollcall.ipa
+          generate_release_notes: true
+
+      - name: Generate LiveContainer source
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          IPA_SIZE=$(stat -f%z CQUPTRollcall.ipa)
+          REPO="${{ github.repository }}"
+          TAG="${GITHUB_REF_NAME}"
+
+          mkdir -p pages
+          python3 -c "
+          import json
+          source = {
+            'name': 'CQUPT Rollcall',
+            'subtitle': '重邮自动签到',
+            'description': '重庆邮电大学自动签到系统 iOS 客户端',
+            'iconURL': 'https://raw.githubusercontent.com/${REPO}/main/icon.png',
+            'apps': [{
+              'name': 'CQUPT签到',
+              'bundleIdentifier': 'com.cqupt.rollcall.CQUPTRollcall',
+              'developerName': 'Auto-CQUPT-Plan',
+              'subtitle': '重邮自动签到',
+              'localizedDescription': '重庆邮电大学自动签到系统。支持扫码签到、数字签到、自动定位签到，通过 Center 服务器实时共享签到码。',
+              'iconURL': 'https://raw.githubusercontent.com/${REPO}/main/icon.png',
+              'tintColor': '007AFF',
+              'versions': [{
+                'version': '${VERSION}',
+                'date': '${DATE}',
+                'localizedDescription': '版本 ${VERSION}',
+                'downloadURL': 'https://github.com/${REPO}/releases/download/${TAG}/CQUPTRollcall.ipa',
+                'size': ${IPA_SIZE}
+              }],
+              'appPermissions': {
+                'entitlements': [],
+                'privacy': {
+                  'NSCameraUsageDescription': '需要使用相机扫描签到二维码'
+                }
+              }
+            }],
+            'news': []
+          }
+          print(json.dumps(source, indent=2, ensure_ascii=False))
+          " > pages/source.json
+
+          cat pages/source.json
+
+      - name: Deploy to GitHub Pages
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./pages
