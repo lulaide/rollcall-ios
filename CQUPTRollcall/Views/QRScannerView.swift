@@ -58,8 +58,22 @@ class QRScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsD
         super.viewDidLoad()
 
         let session = AVCaptureSession()
+        session.sessionPreset = .high
         guard let device = AVCaptureDevice.default(for: .video),
               let input = try? AVCaptureDeviceInput(device: device) else { return }
+
+        // Configure autofocus
+        if device.isFocusModeSupported(.continuousAutoFocus) {
+            try? device.lockForConfiguration()
+            device.focusMode = .continuousAutoFocus
+            if device.isFocusPointOfInterestSupported {
+                device.focusPointOfInterest = CGPoint(x: 0.5, y: 0.5)
+            }
+            if device.isAutoFocusRangeRestrictionSupported {
+                device.autoFocusRangeRestriction = .near
+            }
+            device.unlockForConfiguration()
+        }
 
         session.addInput(input)
 
