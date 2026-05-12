@@ -110,17 +110,17 @@ class LMSClient {
             throw LMSError.loginFailed("未获取到登录重定向")
         }
 
-        // Step 4: Follow redirect to LMS (CAS validates and sets real session cookie)
-        guard let url = URL(string: redirectURL) else {
-            throw LMSError.loginFailed("重定向 URL 无效")
-        }
-        _ = try? await followSession.data(from: url)
+        // Step 4: Manually follow redirect chain (iOS URLSession blocks HTTPS->HTTP auto-follow)
+        try await followAllRedirectsManually(from: redirectURL)
 
-        // Verify session cookie on LMS domain
+        // Verify session cookie + role_token on LMS domain (role_token only set after successful CAS validation)
         let lmsURL = URL(string: lmsBase)!
         let cookies = HTTPCookieStorage.shared.cookies(for: lmsURL) ?? []
         guard cookies.contains(where: { $0.name == "session" }) else {
             throw LMSError.loginFailed("未获取到 session cookie")
+        }
+        guard cookies.contains(where: { $0.name == "role_token" }) else {
+            throw LMSError.loginFailed("未获取到 role_token，CAS 验证未完成")
         }
 
         // Final sanity check: actually try the API to confirm session is authenticated
@@ -128,6 +128,25 @@ class LMSClient {
         let (_, testResp) = try await session.data(from: testURL)
         if let httpResp = testResp as? HTTPURLResponse, httpResp.statusCode != 200 {
             throw LMSError.loginFailed("登录后 API 验证失败 (HTTP \(httpResp.statusCode))")
+        }
+    }
+
+    /// Manually follow all redirects (301/302/303/307/308) using the main session
+    /// so cookies are accumulated even on cross-domain HTTPS->HTTP hops.
+    private func followAllRedirectsManually(from startURL: String) async throws {
+        var currentURL = startURL
+        for _ in 0..<20 { // max 20 hops
+            guard let url = URL(string: currentURL) else { return }
+            let (_, resp) = try await session.data(from: url)
+            guard let httpResp = resp as? HTTPURLResponse else { return }
+            if !(300...399).contains(httpResp.statusCode) { return }
+            guard let loc = httpResp.value(forHTTPHeaderField: "Location") else { return }
+            // Resolve relative URLs
+            if let resolved = URL(string: loc, relativeTo: url)?.absoluteString {
+                currentURL = resolved
+            } else {
+                currentURL = loc
+            }
         }
     }
 
