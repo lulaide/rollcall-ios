@@ -2,15 +2,24 @@ import SwiftUI
 
 struct HistoryView: View {
     @EnvironmentObject var appState: AppState
-    @State private var courses: [Course] = []
-    @State private var selectedCourse: Course?
     @State private var loading = false
     @State private var error: String?
+    @State private var searchText = ""
+
+    var filteredCourses: [Course] {
+        guard !searchText.isEmpty else { return appState.allCourses }
+        let q = searchText.lowercased()
+        return appState.allCourses.filter { course in
+            let name = (course.name ?? "").lowercased()
+            let dept = (course.department?.name ?? "").lowercased()
+            return name.contains(q) || dept.contains(q)
+        }
+    }
 
     var body: some View {
         NavigationStack {
             Group {
-                if loading && courses.isEmpty {
+                if loading && appState.allCourses.isEmpty {
                     ProgressView("加载课程列表...")
                 } else if let error {
                     ContentUnavailableView(
@@ -18,14 +27,16 @@ struct HistoryView: View {
                         systemImage: "exclamationmark.triangle",
                         description: Text(error)
                     )
-                } else if courses.isEmpty {
+                } else if appState.allCourses.isEmpty {
                     ContentUnavailableView(
                         "暂无课程",
                         systemImage: "books.vertical",
-                        description: Text("还未访问过任何课程")
+                        description: Text("本学期还没有课程数据")
                     )
+                } else if filteredCourses.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
                 } else {
-                    List(courses) { course in
+                    List(filteredCourses) { course in
                         NavigationLink {
                             CourseRollcallsView(course: course)
                                 .environmentObject(appState)
@@ -51,11 +62,12 @@ struct HistoryView: View {
                 }
             }
             .navigationTitle("签到历史")
+            .searchable(text: $searchText, prompt: "搜索课程")
             .refreshable {
                 await loadCourses()
             }
             .task {
-                if courses.isEmpty {
+                if appState.allCourses.isEmpty {
                     await loadCourses()
                 }
             }
@@ -66,7 +78,7 @@ struct HistoryView: View {
         loading = true
         error = nil
         do {
-            courses = try await appState.lmsClient.getCourses()
+            appState.allCourses = try await appState.lmsClient.getCourses()
         } catch LMSError.sessionExpired {
             appState.handleSessionExpired()
         } catch {
@@ -116,17 +128,16 @@ struct CourseRollcallsView: View {
         }
         .navigationTitle(course.displayName)
         .navigationBarTitleDisplayMode(.inline)
-        .refreshable { await load() }
+        .refreshable { await load(forceRefresh: true) }
         .task { if rollcalls.isEmpty { await load() } }
     }
 
-    private func load() async {
+    private func load(forceRefresh: Bool = false) async {
         loading = true
         error = nil
         do {
             let userID = try await appState.lmsClient.getMyUserID()
-            rollcalls = try await appState.lmsClient.getRollcallHistory(courseID: course.id, userID: userID)
-            // Sort by date desc
+            rollcalls = try await appState.lmsClient.getRollcallHistory(courseID: course.id, userID: userID, forceRefresh: forceRefresh)
             rollcalls.sort { ($0.rollcallTime ?? "") > ($1.rollcallTime ?? "") }
         } catch LMSError.sessionExpired {
             appState.handleSessionExpired()

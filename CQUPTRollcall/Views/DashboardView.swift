@@ -5,13 +5,22 @@ struct DashboardView: View {
     @State private var showScanner = false
     @State private var showGlobalScanner = false
     @State private var showNumberInput = false
-    @State private var selectedRollcall: Rollcall?
+    @State private var actionRollcallID: Int?
     @State private var numberInput = ""
+
+    /// Active rollcalls not matched to any today's curriculum entry.
+    var orphanActiveRollcalls: [Rollcall] {
+        let matchedTitles = Set(appState.todayEntries
+            .filter { $0.status == .inProgress }
+            .map { $0.instance.course })
+        return appState.rollcalls.filter { rc in
+            !matchedTitles.contains(rc.courseTitle)
+        }
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                // Global scan button — always available
                 Section {
                     Button {
                         showGlobalScanner = true
@@ -26,7 +35,6 @@ struct DashboardView: View {
                     .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                 }
 
-                // Status
                 Section {
                     HStack(spacing: 12) {
                         Image(systemName: appState.centerConnected ? "wifi" : "wifi.slash")
@@ -46,36 +54,32 @@ struct DashboardView: View {
                     }
                 }
 
-                // Rollcalls
-                // Active rollcalls (absent)
-                let absentRollcalls = appState.rollcalls.filter { $0.isAbsent }
-                let doneRollcalls = appState.rollcalls.filter { !$0.isAbsent }
-
-                if absentRollcalls.isEmpty && doneRollcalls.isEmpty {
+                if appState.todayEntries.isEmpty && orphanActiveRollcalls.isEmpty {
                     Section {
                         ContentUnavailableView(
-                            "暂无签到任务",
-                            systemImage: "checkmark.circle",
-                            description: Text("当前没有需要处理的签到")
+                            "今日无课",
+                            systemImage: "calendar.badge.checkmark",
+                            description: Text("今天没有课程安排")
                         )
                     }
                 }
 
-                if !absentRollcalls.isEmpty {
-                    Section("待签到") {
-                        ForEach(absentRollcalls) { rollcall in
-                            RollcallRow(rollcall: rollcall) {
-                                selectedRollcall = rollcall
-                                handleRollcallAction(rollcall)
+                if !appState.todayEntries.isEmpty {
+                    Section("今日课程") {
+                        ForEach(appState.todayEntries) { entry in
+                            TodayEntryRow(entry: entry) {
+                                handleAction(entry: entry)
                             }
                         }
                     }
                 }
 
-                if !doneRollcalls.isEmpty {
-                    Section("已完成") {
-                        ForEach(doneRollcalls) { rollcall in
-                            RollcallRow(rollcall: rollcall) {}
+                if !orphanActiveRollcalls.isEmpty {
+                    Section("其他签到") {
+                        ForEach(orphanActiveRollcalls) { rc in
+                            RollcallRow(rollcall: rc) {
+                                handleRollcallAction(rc)
+                            }
                         }
                     }
                 }
@@ -83,6 +87,7 @@ struct DashboardView: View {
             .navigationTitle("签到")
             .refreshable {
                 await appState.refreshRollcalls()
+                await appState.refreshTodayHistory()
             }
             .sheet(isPresented: $showGlobalScanner) {
                 QRScannerView { qrData in
@@ -93,8 +98,8 @@ struct DashboardView: View {
             .sheet(isPresented: $showScanner) {
                 QRScannerView { qrData in
                     showScanner = false
-                    if let rc = selectedRollcall {
-                        Task { await appState.checkinQR(rollcallID: rc.rollcallID, qrData: qrData) }
+                    if let id = actionRollcallID {
+                        Task { await appState.checkinQR(rollcallID: id, qrData: qrData) }
                     }
                 }
             }
@@ -102,8 +107,8 @@ struct DashboardView: View {
                 TextField("4位数字", text: $numberInput)
                     .keyboardType(.numberPad)
                 Button("确定") {
-                    if let rc = selectedRollcall {
-                        Task { await appState.checkinNumber(rollcallID: rc.rollcallID, number: numberInput) }
+                    if let id = actionRollcallID {
+                        Task { await appState.checkinNumber(rollcallID: id, number: numberInput) }
                     }
                     numberInput = ""
                 }
@@ -127,8 +132,16 @@ struct DashboardView: View {
         }
     }
 
+    private func handleAction(entry: TodayCourseEntry) {
+        guard entry.status == .inProgress, let rcID = entry.rollcallID else { return }
+        guard let rc = appState.rollcalls.first(where: { $0.rollcallID == rcID }) else { return }
+        actionRollcallID = rcID
+        handleRollcallAction(rc)
+    }
+
     private func handleRollcallAction(_ rollcall: Rollcall) {
         guard rollcall.isAbsent else { return }
+        actionRollcallID = rollcall.rollcallID
         switch rollcall.source {
         case "qr":
             showScanner = true
@@ -145,6 +158,119 @@ struct DashboardView: View {
             }
         default: break
         }
+    }
+}
+
+struct TodayEntryRow: View {
+    let entry: TodayCourseEntry
+    let onAction: () -> Void
+
+    @EnvironmentObject var appState: AppState
+
+    var rowContent: some View {
+        HStack(spacing: 12) {
+            VStack(spacing: 2) {
+                Text(entry.instance.startTime)
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
+                Text(entry.instance.endTime)
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            .frame(width: 50)
+
+            RoundedRectangle(cornerRadius: 2)
+                .fill(statusColor.opacity(entry.instance.isNow ? 1.0 : 0.4))
+                .frame(width: 4)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(entry.instance.course)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(2)
+                HStack(spacing: 6) {
+                    if !entry.instance.location.isEmpty {
+                        Label(entry.instance.location, systemImage: "mappin.circle.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                StatusBadge(status: entry.status)
+            }
+
+            Spacer()
+
+            if entry.status == .inProgress {
+                Button(action: onAction) {
+                    Text("签到")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
+        }
+        .padding(.vertical, 2)
+    }
+
+    var body: some View {
+        if let course = entry.course {
+            NavigationLink {
+                CourseRollcallsView(course: course)
+                    .environmentObject(appState)
+            } label: {
+                rowContent
+            }
+        } else {
+            rowContent
+        }
+    }
+
+    var statusColor: Color {
+        switch entry.status {
+        case .signed: return .green
+        case .late: return .orange
+        case .absent: return .red
+        case .inProgress: return .blue
+        case .notStarted, .unknown: return .gray
+        }
+    }
+}
+
+struct StatusBadge: View {
+    let status: TodaySignStatus
+
+    var color: Color {
+        switch status {
+        case .signed: return .green
+        case .late: return .orange
+        case .absent: return .red
+        case .inProgress: return .blue
+        case .notStarted: return .gray
+        case .unknown: return .gray
+        }
+    }
+
+    var icon: String {
+        switch status {
+        case .signed: return "checkmark.circle.fill"
+        case .late: return "clock.fill"
+        case .absent: return "xmark.circle.fill"
+        case .inProgress: return "dot.radiowaves.left.and.right"
+        case .notStarted: return "circle.dotted"
+        case .unknown: return "questionmark.circle"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption2)
+            Text(status.label)
+                .font(.caption2.weight(.medium))
+        }
+        .foregroundStyle(color)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(color.opacity(0.12))
+        .clipShape(Capsule())
     }
 }
 

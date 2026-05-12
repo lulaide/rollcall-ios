@@ -21,6 +21,9 @@ targets:
         NSCameraUsageDescription: 需要使用相机扫描签到二维码
         UILaunchScreen: {}
         CFBundleDisplayName: CQUPT签到
+        CFBundleDevelopmentRegion: zh-Hans
+        CFBundleLocalizations:
+          - zh-Hans
         NSAppTransportSecurity:
           NSExceptionDomains:
             lms.tc.cqupt.edu.cn:

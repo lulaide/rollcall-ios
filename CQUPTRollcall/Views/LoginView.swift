@@ -7,13 +7,14 @@ struct LoginView: View {
     @State private var studentID = ""
     @State private var showAdvanced = false
 
+    private var canLogin: Bool {
+        !username.isEmpty && !password.isEmpty && !appState.isLoggingIn
+    }
+
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 28) {
-                    Spacer(minLength: 40)
-
-                    // Logo
+            Form {
+                Section {
                     VStack(spacing: 10) {
                         Image(systemName: "checkmark.seal.fill")
                             .font(.system(size: 64))
@@ -25,84 +26,73 @@ struct LoginView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+                }
 
-                    // Login form
-                    VStack(spacing: 16) {
-                        GroupBox {
-                            VStack(spacing: 0) {
-                                TextField("IDS 账号", text: $username)
-                                    .textContentType(.username)
-                                    .autocorrectionDisabled()
-                                    .textInputAutocapitalization(.never)
-                                    .padding(.vertical, 10)
-                                Divider()
-                                SecureField("IDS 密码", text: $password)
-                                    .textContentType(.password)
-                                    .padding(.vertical, 10)
-                                Divider()
-                                TextField("学号", text: $studentID)
-                                    .keyboardType(.numberPad)
-                                    .padding(.vertical, 10)
-                            }
-                        }
+                Section {
+                    TextField("IDS 账号", text: $username)
+                        .textContentType(.username)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                    SecureField("IDS 密码", text: $password)
+                        .textContentType(.password)
+                    TextField("学号", text: $studentID)
+                        .keyboardType(.numberPad)
+                        .textContentType(.username)
+                }
 
-                        DisclosureGroup("高级设置", isExpanded: $showAdvanced) {
-                            GroupBox {
-                                VStack(spacing: 0) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Center 服务器").font(.caption).foregroundStyle(.secondary)
-                                        TextField("wss://...", text: $appState.config.centerServerURL)
-                                            .textInputAutocapitalization(.never)
-                                            .autocorrectionDisabled()
-                                    }
-                                    .padding(.vertical, 8)
-                                    Divider()
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Center 密钥").font(.caption).foregroundStyle(.secondary)
-                                        TextField("可选", text: $appState.config.centerServerSecret)
-                                            .textInputAutocapitalization(.never)
-                                            .autocorrectionDisabled()
-                                    }
-                                    .padding(.vertical, 8)
-                                }
-                            }
+                Section {
+                    DisclosureGroup("高级设置", isExpanded: $showAdvanced) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Center 服务器")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            TextField("wss://...", text: $appState.config.centerServerURL)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
                         }
-                        .tint(.secondary)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Center 密钥")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            TextField("可选", text: $appState.config.centerServerSecret)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                        }
                     }
-                    .padding(.horizontal)
+                }
 
-                    // Error
-                    if let error = appState.loginError {
+                if let error = appState.loginError {
+                    Section {
                         Label(error, systemImage: "exclamationmark.triangle")
                             .font(.callout)
                             .foregroundStyle(.red)
-                            .padding(.horizontal)
                     }
+                }
 
-                    // Login button
+                Section {
                     Button {
                         appState.config.username = username
                         appState.config.password = password
                         appState.config.studentID = studentID
                         Task { await appState.login() }
                     } label: {
-                        Group {
+                        HStack {
+                            Spacer()
                             if appState.isLoggingIn {
-                                ProgressView()
+                                ProgressView().tint(.white)
                             } else {
-                                Text("登录")
-                                    .fontWeight(.semibold)
+                                Text("登录").fontWeight(.semibold)
                             }
+                            Spacer()
                         }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(username.isEmpty || password.isEmpty || appState.isLoggingIn)
-                    .padding(.horizontal)
-
-                    Spacer(minLength: 20)
+                    .disabled(!canLogin)
+                    .listRowBackground(canLogin ? Color.accentColor : Color(.systemGray4))
+                    .foregroundStyle(.white)
                 }
             }
             .scrollDismissesKeyboard(.interactively)

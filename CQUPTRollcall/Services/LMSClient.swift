@@ -222,6 +222,9 @@ class LMSClient {
 
     private var cachedUserID: Int?
     private var cachedUserName: String?
+    private var cachedCourses: [Course]?
+    private var cachedActiveSemesterID: Int?
+    private var historyCache: [Int: [RollcallHistory]] = [:]
 
     /// Get current user's LMS internal user_id. Caches the result.
     func getMyUserID() async throws -> Int {
@@ -256,11 +259,29 @@ class LMSClient {
         cachedUserName = me.name
     }
 
-    /// Get user's recently visited courses.
+    /// Get all courses for the current semester. Cached.
     func getCourses() async throws -> [Course] {
-        let url = URL(string: "\(lmsBase)/api/user/recently-visited-courses")!
+        if let c = cachedCourses { return c }
+        let semID = try await getActiveSemesterID()
+        let url = URL(string: "\(lmsBase)/api/my-courses")!
         let data = try await getJSON(from: url)
-        return try JSONDecoder().decode(VisitedCoursesResponse.self, from: data).visitedCourses
+        let all = try JSONDecoder().decode(MyCoursesResponse.self, from: data).courses
+        let filtered = all.filter { $0.semester?.id == semID }
+        cachedCourses = filtered
+        return filtered
+    }
+
+    /// Get the active semester's id. Cached.
+    func getActiveSemesterID() async throws -> Int {
+        if let s = cachedActiveSemesterID { return s }
+        let url = URL(string: "\(lmsBase)/api/my-semesters")!
+        let data = try await getJSON(from: url)
+        let resp = try JSONDecoder().decode(SemestersResponse.self, from: data)
+        guard let active = resp.semesters.first(where: { $0.isActive == true }) else {
+            throw LMSError.networkError(URLError(.badServerResponse))
+        }
+        cachedActiveSemesterID = active.id
+        return active.id
     }
 
     /// Get students of a course (used to resolve user_id by user_no).
@@ -270,11 +291,23 @@ class LMSClient {
         return try JSONDecoder().decode(CourseStudentsResponse.self, from: data).students
     }
 
-    /// Get rollcall history for a specific course.
-    func getRollcallHistory(courseID: Int, userID: Int) async throws -> [RollcallHistory] {
+    /// Get rollcall history for a specific course. Cached per course.
+    func getRollcallHistory(courseID: Int, userID: Int, forceRefresh: Bool = false) async throws -> [RollcallHistory] {
+        if !forceRefresh, let cached = historyCache[courseID] { return cached }
         let url = URL(string: "\(lmsBase)/api/course/\(courseID)/student/\(userID)/rollcalls")!
         let data = try await getJSON(from: url)
-        return try JSONDecoder().decode(RollcallHistoryResponse.self, from: data).rollcalls
+        let list = try JSONDecoder().decode(RollcallHistoryResponse.self, from: data).rollcalls
+        historyCache[courseID] = list
+        return list
+    }
+
+    /// Invalidate caches that depend on session/data (called on logout or session-expired).
+    func clearCaches() {
+        cachedUserID = nil
+        cachedUserName = nil
+        cachedCourses = nil
+        cachedActiveSemesterID = nil
+        historyCache.removeAll()
     }
 
     /// GET a JSON endpoint. Throws sessionExpired on 302/401 — caller decides what to do.

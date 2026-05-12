@@ -4,20 +4,38 @@ struct Course: Identifiable, Codable {
     let id: Int
     let name: String?
     let department: Department?
+    let semester: Semester?
 
     struct Department: Codable {
+        let name: String?
+    }
+
+    struct Semester: Codable {
+        let id: Int?
         let name: String?
     }
 
     var displayName: String { name ?? "未命名课程" }
 }
 
-struct VisitedCoursesResponse: Codable {
-    let visitedCourses: [Course]
+struct MyCoursesResponse: Codable {
+    let courses: [Course]
+}
+
+struct SemesterInfo: Codable {
+    let id: Int
+    let isActive: Bool?
+    let name: String?
 
     enum CodingKeys: String, CodingKey {
-        case visitedCourses = "visited_courses"
+        case id
+        case isActive = "is_active"
+        case name
     }
+}
+
+struct SemestersResponse: Codable {
+    let semesters: [SemesterInfo]
 }
 
 struct CourseStudent: Codable {
@@ -67,6 +85,11 @@ struct RollcallHistory: Identifiable, Codable {
     }
 
     var isSuccess: Bool { studentStatus == "on_call" || studentStatus == "late" }
+
+    var time: Date? {
+        guard let t = rollcallTime else { return nil }
+        return ISO8601DateFormatter().date(from: t)
+    }
 
     enum CodingKeys: String, CodingKey {
         case rollcallID = "rollcall_id"

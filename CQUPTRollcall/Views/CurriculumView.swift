@@ -14,7 +14,16 @@ struct CurriculumView: View {
                     )
                 } else {
                     List(appState.todayCourses) { course in
-                        CourseRow(course: course)
+                        if let lmsCourse = appState.findCourse(forCurriculumName: course.course) {
+                            NavigationLink {
+                                CourseRollcallsView(course: lmsCourse)
+                                    .environmentObject(appState)
+                            } label: {
+                                CourseRow(course: course)
+                            }
+                        } else {
+                            CourseRow(course: course)
+                        }
                     }
                 }
             }
