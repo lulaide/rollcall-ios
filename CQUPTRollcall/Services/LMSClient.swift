@@ -50,12 +50,15 @@ class LMSClient {
         let callbackURL = try await getCallbackURL()
 
         // Step 2: Get login page params
-        let loginURL = "\(idsBase)/authserver/login?service=\(callbackURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? callbackURL)"
+        // Service param contains `://?=&` etc which `.urlQueryAllowed` won't encode — use unreserved-only
+        var comps = URLComponents(string: "\(idsBase)/authserver/login")!
+        comps.queryItems = [URLQueryItem(name: "service", value: callbackURL)]
+        let loginURL = comps.url!.absoluteString
         let (salt, execution) = try await getLoginPageParams(loginURL)
 
         // Step 3: POST login
         let encPwd = CryptoUtil.encryptPassword(config.password, key: salt)
-        let formBody = [
+        let formBody = formURLEncode([
             "username": config.username,
             "password": encPwd,
             "captcha": "",
@@ -64,7 +67,7 @@ class LMSClient {
             "dllt": "generalLogin",
             "lt": "",
             "execution": execution
-        ].map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.value)" }.joined(separator: "&")
+        ])
 
         var req = URLRequest(url: URL(string: loginURL)!)
         req.httpMethod = "POST"
@@ -82,7 +85,7 @@ class LMSClient {
                 let body = String(data: data, encoding: .utf8) ?? ""
                 if body.contains("踢出会话") || body.contains("kickout") {
                     if let exec2 = extractExecution(from: body) {
-                        let formBody2 = "execution=\(exec2.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? exec2)&_eventId=continue"
+                        let formBody2 = formURLEncode(["execution": exec2, "_eventId": "continue"])
                         var req2 = URLRequest(url: URL(string: loginURL)!)
                         req2.httpMethod = "POST"
                         req2.httpBody = formBody2.data(using: .utf8)
@@ -148,6 +151,20 @@ class LMSClient {
                 currentURL = loc
             }
         }
+    }
+
+    /// Encode form fields as application/x-www-form-urlencoded.
+    /// `.urlQueryAllowed` is too permissive (allows +, /, =, &) — base64
+    /// passwords with `+` or `/` would be misinterpreted by the server.
+    private func formURLEncode(_ params: [String: String]) -> String {
+        // RFC 3986 unreserved: A-Z a-z 0-9 - . _ ~
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+        return params.map { key, value in
+            let k = key.addingPercentEncoding(withAllowedCharacters: allowed) ?? key
+            let v = value.addingPercentEncoding(withAllowedCharacters: allowed) ?? value
+            return "\(k)=\(v)"
+        }.joined(separator: "&")
     }
 
     func getRollcalls() async throws -> [Rollcall] {
